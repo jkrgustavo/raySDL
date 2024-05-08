@@ -1,0 +1,21 @@
+[
+ {
+  "directory": "/Users/gustavojokar/Documents/Code/C++Files/rayProjects/raySDL",
+  "arguments": [
+   "g++",
+   "-std=c++20",
+   "-Wall",
+   "-O3",
+   "-arch",
+   "arm64",
+   "-Ilib/SDL2-2.30.3/include",
+   "-Llib/SDL2-2.30.3/build/.libs",
+   "-lSDL2-2.0.0",
+   "-Wl,-rpath,./lib/SDL2-2.30.3/build/.libs",
+   "src/main.cpp",
+   "-o",
+   "build/debug/play"
+  ],
+  "file": "src/main.cpp"
+ }
+]
