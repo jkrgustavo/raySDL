@@ -3,19 +3,144 @@
   "directory": "/Users/gustavojokar/Documents/Code/C++Files/rayProjects/raySDL",
   "arguments": [
    "g++",
+   "-o",
+   "bin/objects/main.o",
+   "-c",
+   "src/main.cpp",
    "-std=c++20",
    "-Wall",
    "-O3",
    "-arch",
    "arm64",
-   "-Ilib/SDL2-2.30.3/include",
-   "-Llib/SDL2-2.30.3/build/.libs",
-   "-lSDL2-2.0.0",
-   "-Wl,-rpath,./lib/SDL2-2.30.3/build/.libs",
-   "src/main.cpp",
-   "-o",
-   "build/debug/play"
+   "-Ilib/SDL2/include",
+   "-Ilib/imgui"
   ],
   "file": "src/main.cpp"
+ },
+ {
+  "directory": "/Users/gustavojokar/Documents/Code/C++Files/rayProjects/raySDL",
+  "arguments": [
+   "g++",
+   "-o",
+   "bin/objects/imgui.o",
+   "-c",
+   "lib/imgui/imgui.cpp",
+   "-std=c++20",
+   "-Wall",
+   "-O3",
+   "-arch",
+   "arm64",
+   "-Ilib/SDL2/include",
+   "-Ilib/imgui"
+  ],
+  "file": "lib/imgui/imgui.cpp"
+ },
+ {
+  "directory": "/Users/gustavojokar/Documents/Code/C++Files/rayProjects/raySDL",
+  "arguments": [
+   "g++",
+   "-o",
+   "bin/objects/imgui_demo.o",
+   "-c",
+   "lib/imgui/imgui_demo.cpp",
+   "-std=c++20",
+   "-Wall",
+   "-O3",
+   "-arch",
+   "arm64",
+   "-Ilib/SDL2/include",
+   "-Ilib/imgui"
+  ],
+  "file": "lib/imgui/imgui_demo.cpp"
+ },
+ {
+  "directory": "/Users/gustavojokar/Documents/Code/C++Files/rayProjects/raySDL",
+  "arguments": [
+   "g++",
+   "-o",
+   "bin/objects/imgui_draw.o",
+   "-c",
+   "lib/imgui/imgui_draw.cpp",
+   "-std=c++20",
+   "-Wall",
+   "-O3",
+   "-arch",
+   "arm64",
+   "-Ilib/SDL2/include",
+   "-Ilib/imgui"
+  ],
+  "file": "lib/imgui/imgui_draw.cpp"
+ },
+ {
+  "directory": "/Users/gustavojokar/Documents/Code/C++Files/rayProjects/raySDL",
+  "arguments": [
+   "g++",
+   "-o",
+   "bin/objects/imgui_tables.o",
+   "-c",
+   "lib/imgui/imgui_tables.cpp",
+   "-std=c++20",
+   "-Wall",
+   "-O3",
+   "-arch",
+   "arm64",
+   "-Ilib/SDL2/include",
+   "-Ilib/imgui"
+  ],
+  "file": "lib/imgui/imgui_tables.cpp"
+ },
+ {
+  "directory": "/Users/gustavojokar/Documents/Code/C++Files/rayProjects/raySDL",
+  "arguments": [
+   "g++",
+   "-o",
+   "bin/objects/imgui_widgets.o",
+   "-c",
+   "lib/imgui/imgui_widgets.cpp",
+   "-std=c++20",
+   "-Wall",
+   "-O3",
+   "-arch",
+   "arm64",
+   "-Ilib/SDL2/include",
+   "-Ilib/imgui"
+  ],
+  "file": "lib/imgui/imgui_widgets.cpp"
+ },
+ {
+  "directory": "/Users/gustavojokar/Documents/Code/C++Files/rayProjects/raySDL",
+  "arguments": [
+   "g++",
+   "-o",
+   "bin/objects/imgui_impl_sdl2.o",
+   "-c",
+   "lib/imgui/backends/imgui_impl_sdl2.cpp",
+   "-std=c++20",
+   "-Wall",
+   "-O3",
+   "-arch",
+   "arm64",
+   "-Ilib/SDL2/include",
+   "-Ilib/imgui"
+  ],
+  "file": "lib/imgui/backends/imgui_impl_sdl2.cpp"
+ },
+ {
+  "directory": "/Users/gustavojokar/Documents/Code/C++Files/rayProjects/raySDL",
+  "arguments": [
+   "g++",
+   "-o",
+   "bin/objects/imgui_impl_sdlrenderer2.o",
+   "-c",
+   "lib/imgui/backends/imgui_impl_sdlrenderer2.cpp",
+   "-std=c++20",
+   "-Wall",
+   "-O3",
+   "-arch",
+   "arm64",
+   "-Ilib/SDL2/include",
+   "-Ilib/imgui"
+  ],
+  "file": "lib/imgui/backends/imgui_impl_sdlrenderer2.cpp"
  }
 ]
