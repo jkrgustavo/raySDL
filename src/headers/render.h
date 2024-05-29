@@ -1,12 +1,12 @@
 #pragma once
 
 #include <cstring>
-#include <iostream>
+#include <SDL.h>
+#include <imgui.h>
+#include <backends/imgui_impl_sdl2.h>
+#include <backends/imgui_impl_sdlrenderer2.h>
 
-#include "../../lib/SDL2/include/SDL.h"
-#include "../../lib/imgui/imgui.h"
-#include "../../lib/imgui/backends/imgui_impl_sdl2.h"
-#include "../../lib/imgui/backends/imgui_impl_sdlrenderer2.h"
+#include "util.h"
 
 #define ASSERT(_e, ...) if (!_e) { fprintf(stderr, __VA_ARGS__); exit(1); }
 
@@ -51,11 +51,9 @@ public:
 
         IMGUI_CHECKVERSION();
         ImGui::CreateContext();
-        this->io = &ImGui::GetIO();
-        this->io->ConfigFlags |= ImGuiConfigFlags_DockingEnable;
-        this->io->ConfigFlags |= ImGuiConfigFlags_ViewportsEnable;
-        this->io->ConfigViewportsNoAutoMerge = true;
-        //io.ConfigViewportsNoTaskBarIcon = true;
+        ImGuiIO &io = ImGui::GetIO();
+        io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;
+        io.ConfigViewportsNoAutoMerge = true;
 
         ImGui::StyleColorsDark();
         ImGui_ImplSDL2_InitForSDLRenderer(this->window, this->renderer);
@@ -73,43 +71,6 @@ public:
         SDL_DestroyWindow(this->window);
         SDL_Quit();
     }
-
-    void present() {
-        SDL_UpdateTexture(this->texture, NULL, this->pixels, this->tex_width * sizeof(uint));
-
-        ImGui::Begin("Texture");
-        ImGui::Image(reinterpret_cast<ImTextureID>(this->texture), ImVec2(this->tex_width, this->tex_height));
-        ImGui::End();
-
-        ImGui::End();
-
-
-
-        ImGui::Render();
-        ImGuiIO &io = ImGui::GetIO();
-        SDL_RenderSetScale(renderer, io.DisplayFramebufferScale.x, io.DisplayFramebufferScale.y);
-        SDL_RenderClear(renderer);
-        ImGui_ImplSDLRenderer2_RenderDrawData(ImGui::GetDrawData());
-        if (io.ConfigFlags & ImGuiConfigFlags_ViewportsEnable) {
-            std::cout << "hi" << std::endl;
-            SDL_Window* backup_current_window = SDL_GL_GetCurrentWindow();
-            SDL_GLContext backup_current_context = SDL_GL_GetCurrentContext();
-            ImGui::UpdatePlatformWindows();
-            ImGui::RenderPlatformWindowsDefault();
-            SDL_GL_MakeCurrent(backup_current_window, backup_current_context);
-        }
-        // SDL_RenderCopyEx(
-        //     this->renderer, 
-        //     this->texture,  
-        //     NULL,
-        //     NULL,
-        //     0.0,
-        //     NULL,
-        //     SDL_FLIP_VERTICAL);
-        SDL_RenderPresent(this->renderer);
-        this->num_frames++;
-    }
-
     void begin_new_frame() {
         ImGui_ImplSDLRenderer2_NewFrame();
         ImGui_ImplSDL2_NewFrame();
@@ -124,14 +85,26 @@ public:
         ImGui::DockSpace(dockspace_id, ImVec2(0.0f, 0.0f), ImGuiDockNodeFlags_None);
     }
 
-    int get_window_width() { return this->window_width; }
-    int get_window_height() { return this->window_height; }
-    int get_texture_width() { return this->tex_width; }
-    int get_texture_height() { return this->tex_height; }
-    int frame_count() { return this->num_frames; }
-    void reset_frame_count() { this->num_frames = 0; }
+    void present() {
+        SDL_UpdateTexture(this->texture, NULL, this->pixels, this->tex_width * sizeof(uint));
 
-public:
+        ImGui::Begin("Texture");
+        ImGui::Image(reinterpret_cast<ImTextureID>(this->texture), ImVec2(this->window_width - 305, this->window_height - 70));
+        ImGui::End();
+
+        ImGui::End();
+
+
+
+        ImGui::Render();
+        ImGuiIO &io = ImGui::GetIO();
+        SDL_RenderSetScale(renderer, io.DisplayFramebufferScale.x, io.DisplayFramebufferScale.y);
+        SDL_RenderClear(renderer);
+        ImGui_ImplSDLRenderer2_RenderDrawData(ImGui::GetDrawData());
+        SDL_RenderPresent(this->renderer);
+        this->num_frames++;
+    }
+
     const Uint8* input() {
         const Uint8 *keystates = SDL_GetKeyboardState(NULL);
 
@@ -146,6 +119,14 @@ public:
         return keystates;
     }
 
+
+    int get_window_width() { return this->window_width; }
+    int get_window_height() { return this->window_height; }
+    int get_texture_width() { return this->tex_width; }
+    int get_texture_height() { return this->tex_height; }
+    int frame_count() { return this->num_frames; }
+    void reset_frame_count() { this->num_frames = 0; }
+
     void set_pixel(int x, int y, uint color) {
         this->pixels[(y * this->tex_width) + x] = color;
     }
@@ -159,11 +140,9 @@ public:
         memset(this->pixels, 0, (this->tex_width * this->tex_height) * sizeof(uint));
     }
 
-    template<class C>
-    void clear_buffer(C *buffer) {
-        memset(buffer, 0, (this->tex_width * this->tex_height) * sizeof(*buffer));
+    void set_buffer(uint *pixels) {
+        memcpy(this->pixels, pixels, (this->tex_width * this->tex_height) * sizeof(uint));
     }
-
 
   
 private:
@@ -176,8 +155,6 @@ private:
     uint *pixels;
     int window_width, window_height;
     int tex_width, tex_height;
-
-    ImGuiIO *io;
 
     int num_frames = 0;
 };

@@ -4,15 +4,15 @@
 
 class camera {
 public:
-    camera(double aspect_ratio) {
-        auto viewport_height = 2.0;
-        auto viewport_width = aspect_ratio * viewport_height;
-        auto focal_length = 1.0;
+    camera(simd::double1 aspect_ratio) {
+        simd::double1 viewport_height = 2.0;
+        simd::double1 viewport_width = aspect_ratio * viewport_height;
+        simd::double1 focal_length = 1.0;
 
-        origin = point3(0, 0, 0);
-        horizontal = vec3(viewport_width, 0, 0);
-        vertical = vec3(0, viewport_height, 0);
-        lower_left_corner = origin - horizontal/2 - vertical/2 - vec3(0, 0, focal_length);
+        origin = simd::make_double3(0, 0, 0);
+        horizontal = simd::make_double3(viewport_width, 0, 0);
+        vertical = simd::make_double3(0, -viewport_height, 0);
+        lower_left_corner = origin - horizontal/2 - vertical/2 - simd::make_double3(0, 0, focal_length);
     }
   
     ray get_ray(double u, double v) const {
@@ -24,9 +24,9 @@ public:
         double j = origin[1];
         double k = origin[2];
 
-        double A = rot.x();
-        double B = rot.y();
-        double C = rot.z();
+        double A = rot.x;
+        double B = rot.y;
+        double C = rot.z;
 
         origin[0] = j*sin(A)*sin(B)*cos(C) - k*cos(A)*sin(B)*cos(C) +
                         j*cos(A)*sin(B)*sin(C) + k*sin(A)*sin(C) + i*cos(B)*cos(C);

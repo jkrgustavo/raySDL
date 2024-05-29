@@ -1,1 +1,4 @@
 *.o
+compile_commands.json
+Makefile
+mod_compile_cmd

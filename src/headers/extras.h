@@ -9,23 +9,22 @@ struct Parameters {
     Parameters(int width, int height) 
         : tex_width(width), tex_height(height) {}
     ~Parameters() {
-        delete[] old_buffer;
-        delete[] new_buffer; 
+        delete[] buffer; 
     }
 
     int tex_width, tex_height;
-    color *old_buffer = new color[tex_width*tex_height];
-    color *new_buffer = new color[tex_width*tex_height];
+    uint *buffer = new uint[tex_width*tex_height];
+    color *color_buffer = new color[tex_width*tex_height];
 
     bool switched = false;
     int render_type = 0;
 };
 
-void handle_inputs(const Uint8* keystates, sphere &sphere, Parameters& parameters) {
-    if (keystates[SDL_SCANCODE_W]) { sphere.center[2] -= 0.1; }
-    if (keystates[SDL_SCANCODE_A]) { sphere.center[0] -= 0.2; }
-    if (keystates[SDL_SCANCODE_S]) { sphere.center[2] += 0.1; }
-    if (keystates[SDL_SCANCODE_D]) { sphere.center[0] += 0.2; }
+void handle_inputs(const Uint8* keystates, shared_ptr<sphere> sphere, Parameters& parameters, simd::double1 dt) {
+    if (keystates[SDL_SCANCODE_W]) { sphere->center[2] -= 1 * dt; }
+    if (keystates[SDL_SCANCODE_A]) { sphere->center[0] -= 1 * dt; }
+    if (keystates[SDL_SCANCODE_S]) { sphere->center[2] += 1 * dt; }
+    if (keystates[SDL_SCANCODE_D]) { sphere->center[0] += 1 * dt; }
 
     if (keystates[SDL_SCANCODE_Q]) { parameters.render_type = 0; }
     if (keystates[SDL_SCANCODE_E]) { parameters.render_type = 1; }
@@ -35,14 +34,14 @@ void handle_inputs(const Uint8* keystates, sphere &sphere, Parameters& parameter
 }
 
 // Keeps the surface of one sphere on the other, wasd keys make one sphere circle the other
-void intersect_spheres(sphere &small, sphere &surface) {
-    auto tether = small.center - surface.center;
-    double distance = tether.length();
-    if (distance >= (surface.radius + small.radius)) {
-        small.center[1] -= (distance - (surface.radius + small.radius));
+void intersect_spheres(shared_ptr<sphere> small, shared_ptr<sphere> surface) {
+    auto tether = small->center - surface->center;
+    double distance = simd::length(tether);
+    if (distance >= (surface->radius + small->radius)) {
+        small->center[1] -= (distance - (surface->radius + small->radius));
     }
-    if (distance <= (surface.radius + small.radius)) {
-        small.center[1] += ((surface.radius + small.radius) - distance);
+    if (distance <= (surface->radius + small->radius)) {
+        small->center[1] += ((surface->radius + small->radius) - distance);
     }
 }
 
