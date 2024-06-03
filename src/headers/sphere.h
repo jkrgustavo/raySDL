@@ -5,19 +5,19 @@
 
 class sphere : public hittable {
 public:
-    sphere(const point3& center, double radius, shared_ptr<material> mat)
+    sphere(const point3& center, float radius, shared_ptr<material> mat)
       : center(center), radius(fmax(0,radius)), mat(mat) {}
 
     virtual bool hit(
-        const ray& r, double t_min, double t_max, hit_record& rec) const override;
+        const ray& r, simd::float1 t_min, simd::float1 t_max, hit_record& rec) const override;
 
 public:
     point3 center;
-    double radius;
+    float radius;
     shared_ptr<material> mat;
 };
 
-bool sphere::hit(const ray& r, double t_min, double t_max, hit_record& rec) const {
+bool sphere::hit(const ray& r, float t_min, float t_max, hit_record& rec) const {
     vec3 oc = r.origin() - center;
     auto a = simd::length_squared(r.direction());
     auto half_b = simd::dot(oc, r.direction());

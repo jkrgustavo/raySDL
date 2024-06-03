@@ -2,8 +2,7 @@ CC = clang++
 
 CC_FLAGS = -std=gnu++17 -Wall -O3 -march=native -arch arm64 -Ilib/SDL2/include -Ilib/imgui
 
-LD_FLAGS = -Llib/SDL2/build/.libs -lSDL2-2.0.0 -ltbb
-LD_FLAGS += -L/opt/homebrew/Cellar/tbb/2021.12.0/lib
+LD_FLAGS = -Llib/SDL2/build/.libs -lSDL2-2.0.0
 
 SRC_FILES = $(wildcard src/*.cpp) $(wildcard lib/imgui/*.cpp) lib/imgui/backends/imgui_impl_sdl2.cpp lib/imgui/backends/imgui_impl_sdlrenderer2.cpp
 OBJ_FILES = $(SRC_FILES:%.cpp=%.o)

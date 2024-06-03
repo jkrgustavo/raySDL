@@ -3,22 +3,25 @@
 #include "hittable.h"
 #include "util.h"
 
+
 class material {
 public:
     virtual ~material() = default;
 
+    // scatter based on the cstdlib rand()
     virtual bool scatter(
         const ray &r_in, const hit_record &rec, color &attenuation, ray &scattered) const {
         return false;
     }
 
+    // scatter based on the pcg hashing function
     virtual bool scatter(
         const ray &r_in, const hit_record &rec, color &attenuation, ray &scattered, uint seed)
     const {
         return false;
     }
 
-    virtual color get_color() const { return simd::make_double3(0, 0, 0); }
+    virtual color get_color() const { return simd::make_float3(0, 0, 0); }
     virtual bool set_color(const color &in) { return false; }
     virtual const char *type_name() const { return "material"; }
 };

@@ -111,7 +111,6 @@ public:
         while(SDL_PollEvent(&event)) {
             ImGui_ImplSDL2_ProcessEvent(&event);
             if (event.type == SDL_QUIT) {
-                //std::cout << "\nClosing program" << std::endl;
                 SDL_Quit();
                 exit(0);
             }

@@ -9,8 +9,6 @@
 using std::shared_ptr;
 using std::make_shared;
 
-
-
 class hittable_list : public hittable {
 public:
     hittable_list() {}
@@ -20,7 +18,7 @@ public:
     void add(shared_ptr<hittable> object) { objects.emplace_back(object); }
 
     virtual bool hit(
-        const ray& r, simd::double1 t_min, simd::double1 t_max, hit_record& rec) const override;
+        const ray& r, simd::float1 t_min, simd::float1 t_max, hit_record& rec) const override;
 
   
 public:
@@ -32,26 +30,12 @@ struct Scene {
     hittable_list world;
     shared_ptr<hittable> controlled;
 
-    void toggle_controlled() {
-        static int i = 1;
+    void toggle_controlled();
 
-        controlled = world.objects[(i++) % world.objects.size()];
-    }
-
-    void init_scene1() {
-        materials.emplace_back(make_shared<lambertian>(simd::make_double3(0.8, 0.8, 0.0)));
-        materials.emplace_back(make_shared<lambertian>(simd::make_double3(0.1, 0.2, 0.5)));
-
-        auto sphere_ground = make_shared<sphere>(simd::make_double3( 0.0, -100.5, -1.0), 100.0, materials[0]);
-        auto sphere1 = make_shared<sphere>(simd::make_double3( 0.0,    0.0, -1.2),   0.5, materials[1]);
-        world.add(sphere_ground);
-        world.add(sphere1);
-
-        controlled = sphere1;
-    }
+    void init_scene1();
 };
 
-bool hittable_list::hit(const ray& r, simd::double1 t_min, simd::double1 t_max, hit_record& rec) const {
+bool hittable_list::hit(const ray& r, simd::float1 t_min, simd::float1 t_max, hit_record& rec) const {
     hit_record temp_rec;
     bool hit_anything = false;
     auto closest_so_far = t_max;
@@ -64,4 +48,22 @@ bool hittable_list::hit(const ray& r, simd::double1 t_min, simd::double1 t_max, 
         }
     }
     return hit_anything;
+}
+
+void Scene::toggle_controlled() {
+    static int i = 1;
+
+    controlled = world.objects[(i++) % world.objects.size()];
+}
+
+void Scene::init_scene1() {
+    materials.emplace_back(make_shared<lambertian>(simd::make_float3(0.8, 0.8, 0.0)));
+    materials.emplace_back(make_shared<lambertian>(simd::make_float3(0.1, 0.2, 0.5)));
+
+    auto sphere_ground = make_shared<sphere>(simd::make_float3( 0.0, -100.5, -1.0), 100.0, materials[0]);
+    auto sphere1 = make_shared<sphere>(simd::make_float3( 0.0,    0.0, -1.2),   0.5, materials[1]);
+    world.add(sphere_ground);
+    world.add(sphere1);
+
+    controlled = sphere1;
 }

@@ -9,60 +9,57 @@
 #include "headers/camera.h"
 #include "headers/vec3.h"
 #include "headers/material.h"
-#include "imgui.h"
+#include <imgui.h>
 
 // Image Constants
 const auto TEX_ASPECT = 16.0 / 9.0;
 const int TEX_WIDTH = 1000;
 const int TEX_HEIGHT = static_cast<int>(TEX_WIDTH / TEX_ASPECT);
 
-
-
 void sphere_menu(Scene &scene, Parameters &params, double dt);
 void thread_menu(int thread_count, std::vector<RenderTask> task_collection);
 
-// // --------------------------------------PCG-------------------------------------
-// color pcg_ray_color(const ray& r, const hittable& world, int depth, uint seed) {
-//     hit_record rec;
-//     if (depth <= 0)
-//         return simd::make_double3(0,0,0);
-//
-//     if (world.hit(r, 0.001, infinity, rec)) {
-//         ray scattered;
-//         color attenuation;
-//         if (rec.mat->scatter(r, rec, attenuation, scattered, seed)) {
-//             return attenuation * pcg_ray_color(scattered, world, depth-1, seed);
-//         }
-//         return simd::make_double3(0, 0, 0);
-//     }
-//     vec3 unit_direction = simd::normalize(r.direction());
-//     auto t = 0.5*(unit_direction.y + 1.0);
-//     return (1.0-t)*simd::make_double3(1.0, 1.0, 1.0) + t*simd::make_double3(0.5, 0.7, 1.0);
-// }
-//
-// void pcg_render(hittable_list& world, camera& cam, Parameters &parameters) {
-//     const int samples_per_pixel = 1;
-//     const int max_depth = 50;
-//
-//     for (int j = 0; j < TEX_HEIGHT; j++) {
-//         for (int i = 0; i < TEX_WIDTH; i++) {
-//             color pixel_color = simd::make_double3(0, 0, 0);
-//             simd::uint1 pixel_coord = (j * TEX_WIDTH-1) + i;
-//             for (int s = 0; s < samples_per_pixel; ++s) {
-//                 auto u = (i + pcg_random_double(pixel_coord)) / (TEX_WIDTH-1);
-//                 auto v = (j + pcg_random_double(pixel_coord)) / (TEX_HEIGHT-1);
-//                 ray r = cam.get_ray(u, v);
-//                 pixel_color += pcg_ray_color(r, world, max_depth, pixel_coord);
-//             }
-//             parameters.buffer[j * parameters.tex_width + i] = pack_color(pixel_color, samples_per_pixel);
-//         }
-//     }
-// }
-// // -----------------------------------------------------------------------------
+// --------------------------------------PCG-------------------------------------
+color pcg_ray_color(const ray& r, const hittable& world, int depth, uint seed) {
+    hit_record rec;
+    if (depth <= 0)
+        return simd::make_float3(0,0,0);
+
+    if (world.hit(r, 0.001, infinity, rec)) {
+        ray scattered;
+        color attenuation;
+        if (rec.mat->scatter(r, rec, attenuation, scattered, seed)) {
+            return attenuation * pcg_ray_color(scattered, world, depth-1, seed);
+        }
+        return simd::make_float3(0, 0, 0);
+    }
+    vec3 unit_direction = simd::normalize(r.direction());
+    auto t = 0.5*(unit_direction.y + 1.0);
+    return (1.0-t)*simd::make_float3(1.0, 1.0, 1.0) + t*simd::make_float3(0.5, 0.7, 1.0);
+}
+
+void pcg_render(hittable_list& world, camera& cam, Parameters &parameters, RenderTask task) {
+    const int max_depth = 50;
+
+    for (int j = task.start_y; j < task.end_y; j++) {
+        for (int i = task.start_x; i < task.end_x; i++) {
+            color pixel_color = simd::make_float3(0, 0, 0);
+            simd::uint1 pixel_coord = (j * TEX_WIDTH-1) + i;
+            for (int s = 0; s < parameters.samples_per_pixel; ++s) {
+                auto u = (i + pcg_random_float(pixel_coord)) / (TEX_WIDTH-1);
+                auto v = (j + pcg_random_float(pixel_coord)) / (TEX_HEIGHT-1);
+                ray r = cam.get_ray(u, v);
+                pixel_color += pcg_ray_color(r, world, max_depth, pixel_coord);
+            }
+            parameters.color_buffer[j * parameters.tex_width + i] = pixel_color;
+        }
+    }
+}
+// -----------------------------------------------------------------------------
 color ray_color(const ray& r, const hittable& world, int depth) {
     hit_record rec;
     if (depth <= 0)
-        return simd::make_double3(0, 0, 0);
+        return simd::make_float3(0, 0, 0);
 
     if (world.hit(r, 0.001, infinity, rec)) {
         ray scattered;
@@ -70,28 +67,28 @@ color ray_color(const ray& r, const hittable& world, int depth) {
         if (rec.mat->scatter(r, rec, attenuation, scattered)) {
             return attenuation * ray_color(scattered, world, depth-1);
         }
-        return simd::make_double3(0, 0, 0);
+        return simd::make_float3(0, 0, 0);
     }
+
     vec3 unit_direction = simd::normalize(r.direction());
     auto t = 0.5*(unit_direction.y + 1.0);
-    return (1.0-t)*simd::make_double3(1.0, 1.0, 1.0) + t*simd::make_double3(0.5, 0.7, 1.0);
+    return (1.0-t)*simd::make_float3(1.0, 1.0, 1.0) + t*simd::make_float3(0.5, 0.7, 1.0);
 }
 
 void render(hittable_list& world, camera& cam, Parameters& parameters, RenderTask task) {
 
-    int samples_per_pixel = 1;
     const int max_depth = 10;
 
     for (int j = task.start_y; j < task.end_y; j++) {
         for (int i = task.start_x; i < task.end_x; i++) {
-            color pixel_color = simd::make_double3(0, 0, 0);;
-            for (int s = 0; s < samples_per_pixel; ++s) {
-                auto u = (i + random_double()) / (TEX_WIDTH-1);
-                auto v = (j + random_double()) / (TEX_HEIGHT-1);
+            color pixel_color = simd::make_float3(0, 0, 0);;
+            for (int s = 0; s < parameters.samples_per_pixel; ++s) {
+                auto u = (i + random_float()) / (TEX_WIDTH-1);
+                auto v = (j + random_float()) / (TEX_HEIGHT-1);
                 ray r = cam.get_ray(u, v);
                 pixel_color += ray_color(r, world, max_depth);
             }
-            parameters.buffer[j * parameters.tex_width + i] = pack_color(pixel_color, samples_per_pixel);       
+            parameters.color_buffer[j * parameters.tex_width + i] = pixel_color;
         }
     }
 }
@@ -102,7 +99,7 @@ void thread_render(ThreadManager &threads, hittable_list &world, camera &cam, Pa
         RenderTask task;
         threads.task_queue.wait_and_pop(task);
 
-        render(world, cam, params, task);
+        pcg_render(world, cam, params, task);
 
         threads.completion_queue.push(task);
     }
@@ -116,7 +113,7 @@ int main() {
     int window_height = 635;
     Renderer renderer(window_width, window_height, TEX_WIDTH, TEX_HEIGHT);
     Parameters parameters(TEX_WIDTH, TEX_HEIGHT);
-    parameters.render_type = 1;
+    parameters.render_type = 2;
 
     Scene scene;
     scene.init_scene1();
@@ -128,7 +125,6 @@ int main() {
     threads.threads_init(thread_render, std::ref(threads), std::ref(scene.world), std::ref(cam), std::ref(parameters));
 
     auto time = NOW();
-    std::cout << sizeof(simd::float4);
 
     // Render Loop
     while(true) {
@@ -141,8 +137,16 @@ int main() {
 
         switch (parameters.render_type) {
             case 1: {
-                //pcg_render(scene.world, cam, parameters);
                 render(scene.world, cam, parameters, RenderTask {
+                    .start_x = 0,
+                    .start_y = 0,
+                    .end_x = TEX_WIDTH,
+                    .end_y = (uint)TEX_HEIGHT,
+                });
+                break;
+            }
+            case 2: {
+                pcg_render(scene.world, cam, parameters, RenderTask {
                     .start_x = 0,
                     .start_y = 0,
                     .end_x = TEX_WIDTH,
@@ -155,12 +159,13 @@ int main() {
             }
         }
 
-       if (parameters.render_type != 1)
+       if (parameters.render_type != 1 && parameters.render_type != 2)
             threads.wait_for_completion();
 
         sphere_menu(scene, parameters, dt);
         thread_menu(threads.thread_count, threads.task_collection);
 
+        fast_color_pack(parameters.color_buffer, parameters.buffer, parameters.samples_per_pixel, TEX_WIDTH * TEX_HEIGHT);
         renderer.set_buffer(parameters.buffer);
         renderer.present();
     }
@@ -177,16 +182,22 @@ void sphere_menu(Scene &scene, Parameters &params, double dt) {
 
     ImGui::Begin("Info");
     ImGui::Text("%.2f FPS", 1 / dt);
-    if (ImGui::Button("Reg")) {
+    if (ImGui::Button("multi")) {
         params.render_type = 0;
     }
     ImGui::SameLine();
-    if (ImGui::Button("PCG")) {
+    if (ImGui::Button("regular")) {
         params.render_type = 1;
     }
     ImGui::SameLine();
+    if (ImGui::Button("PCG")) {
+        params.render_type = 2;
+    }
+    ImGui::SameLine();
     if (params.render_type == 1) {
-        ImGui::Text("PCG Render");
+        ImGui::Text("Default Render");
+    } else if (params.render_type == 2) {
+        ImGui::Text("PCG Renderer");
     } else {
         ImGui::Text("Multi-threaded");
     }
@@ -199,7 +210,7 @@ void sphere_menu(Scene &scene, Parameters &params, double dt) {
     ImGui::Text("%s", label_sphere.c_str());
 
     for (shared_ptr<hittable> object : scene.world.objects) {
-        std::shared_ptr<sphere> s = static_pointer_cast<sphere>(object);
+        std::shared_ptr<sphere> s = std::static_pointer_cast<sphere>(object);
         std::string label = "Sphere " + std::to_string(i) + "##" + std::to_string(i);
 
         if (ImGui::CollapsingHeader(label.c_str())) {
@@ -222,16 +233,16 @@ void sphere_menu(Scene &scene, Parameters &params, double dt) {
             }
             ImGui::SameLine();
             if (ImGui::Button("metal")) {
-                s->mat = make_shared<metal>(simd::make_double3(0.3, 0.3, 0.3));
+                s->mat = make_shared<metal>(simd::make_float3(0.3, 0.3, 0.3));
             }
             ImGui::SameLine();
             if (ImGui::Button("lambertian")) {
-                s->mat = make_shared<lambertian>(simd::make_double3(0.3, 0.3, 0.3));
+                s->mat = make_shared<lambertian>(simd::make_float3(0.3, 0.3, 0.3));
             }
 
             if (color_toggle == 1) {
                 ImGui::ColorPicker3("Sphere Color", col);
-                s->mat->set_color(simd::make_double3(col[0], col[1], col[2]));
+                s->mat->set_color(simd::make_float3(col[0], col[1], col[2]));
             }
         }
 
@@ -239,8 +250,8 @@ void sphere_menu(Scene &scene, Parameters &params, double dt) {
     }
 
     if (ImGui::Button("New Sphere")) {
-        auto material_center = make_shared<lambertian>(simd::make_double3(0.5, 0.5, 0.5));
-        scene.world.add(make_shared<sphere>(simd::make_double3(0.0, 0.0, -1.2), 0.5, material_center));
+        auto material_center = make_shared<lambertian>(simd::make_float3(0.5, 0.5, 0.5));
+        scene.world.add(make_shared<sphere>(simd::make_float3(0.0, 0.0, -1.2), 0.5, material_center));
     }
     ImGui::End();
 }
