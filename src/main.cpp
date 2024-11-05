@@ -203,7 +203,9 @@ void sphere_menu(Scene &scene, Parameters &params, double dt) {
     }
 
     if (ImGui::Button("toggle sphere")) {
-        scene.toggle_controlled();
+        sphere_toggle = (sphere_toggle + 1) % scene.world.objects.size();
+        std::cout << sphere_toggle << std::endl;
+        scene.toggle_controlled(sphere_toggle);
     }
     std::string label_sphere = "Controlled: sphere" + std::to_string(sphere_toggle);
     ImGui::SameLine();

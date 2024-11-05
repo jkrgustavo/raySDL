@@ -1,6 +1,6 @@
 CC = clang++
 
-CC_FLAGS = -std=gnu++17 -Wall -O3 -march=native -arch arm64 -Ilib/SDL2/include -Ilib/imgui
+CC_FLAGS = -std=gnu++17 -Wall -O0 -march=native -arch arm64 -Ilib/SDL2/include -Ilib/imgui
 
 LD_FLAGS = -Llib/SDL2/build/.libs -lSDL2-2.0.0
 
@@ -21,6 +21,10 @@ libs:
 
 comp: $(OBJ_FILES)
 	$(CC) -o $(BIN)/$(OBJ_NAME) $^ $(LD_FLAGS)
+
+build:
+	cd lib/SDL2 && ./configure; make;
+	make run
 
 run: all
 	rm src/*.o

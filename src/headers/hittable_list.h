@@ -6,6 +6,8 @@
 
 #include <vector>
 
+#include <iostream>
+
 using std::shared_ptr;
 using std::make_shared;
 
@@ -30,7 +32,7 @@ struct Scene {
     hittable_list world;
     shared_ptr<hittable> controlled;
 
-    void toggle_controlled();
+    void toggle_controlled(int current_index);
 
     void init_scene1();
 };
@@ -50,10 +52,8 @@ bool hittable_list::hit(const ray& r, simd::float1 t_min, simd::float1 t_max, hi
     return hit_anything;
 }
 
-void Scene::toggle_controlled() {
-    static int i = 1;
-
-    controlled = world.objects[(i++) % world.objects.size()];
+void Scene::toggle_controlled(int current_index) {
+    controlled = world.objects[current_index];
 }
 
 void Scene::init_scene1() {
